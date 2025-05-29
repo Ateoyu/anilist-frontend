@@ -1,12 +1,15 @@
+import './styles/main.scss'
 import { router } from './router.js';
+import $ from 'jquery';
 
-window.addEventListener('DOMContentLoaded', router);
-window.addEventListener('popstate', router);
+// Make jQuery available globally
+window.$ = window.jQuery = $;
 
-document.body.addEventListener('click', (e) => {
-    if (e.target.matches('[data-link]')) {
-        e.preventDefault();
-        history.pushState(null, '', e.target.href);
-        router();
-    }
+$(document).ready(router);
+$(window).on('popstate', router);
+
+$(document).on('click', '[data-link]', function(e) {
+    e.preventDefault();
+    history.pushState(null, '', $(this).attr('href'));
+    router();
 });

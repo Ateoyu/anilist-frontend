@@ -1,0 +1,40 @@
+@use "../variables" as *;
+@use "sass:color";
+
+#navGridContainer {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 75px;
+  align-items: center;
+  gap: 10px;
+  background: $primary-colour;
+  box-shadow: 0 5px 5px color.scale($primary-colour, $lightness: -10%);
+
+  .websiteLogo {
+    object-fit: contain;
+    max-height: 100%;
+    justify-self: start;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  a {
+    text-decoration: none;
+    color: color.scale($primary-colour, $lightness: 60%);
+
+    &:hover {
+      color: white;
+      transition: color 0.3s;
+    }
+
+    &:visited {
+      color: rgb(160, 177, 197);
+    }
+  }
+}

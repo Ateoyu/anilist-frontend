@@ -1,0 +1,36 @@
+@use "../variables" as *;
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2rem;
+  color: lighten($primary-colour, 40%);
+}
+
+.loading-indicator {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  margin-top: 10px;
+  font-size: 1rem;
+  color: lighten($primary-colour, 40%);
+  position: relative;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 3px solid rgba(lighten($primary-colour, 40%), 0.3);
+    border-top-color: lighten($primary-colour, 40%);
+    animation: spin 1s infinite linear;
+    margin: 10px auto 0;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

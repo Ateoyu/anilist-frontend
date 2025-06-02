@@ -79,8 +79,12 @@ export function renderBrowse() {
 
     let variables = {};
     let currentPage = 1;
+    let hasNextPage = true;
+    let isLoading = false;
 
     setupFilterEventListeners();
+    setupInfiniteScroll();
+    loadAnimeData();
 
     function setupFilterEventListeners() {
         // Text search input (with debounce)
@@ -121,30 +125,59 @@ export function renderBrowse() {
     }
 
     function loadAnimeData() {
+        isLoading = true;
         variables.page = 1;
+        currentPage = 1;
         console.log("Loading anime data...");
+
+        // Show loading indicator
+        const $animeGrid = $('#animeGridContainer');
+        $animeGrid.html('<div class="loading-indicator">Loading anime...</div>');
 
         $.post({
             url: 'https://graphql.anilist.co',
             contentType: 'application/json',
             data: JSON.stringify({query, variables}),
-            success: displayAnimeData,
+            success: function(response) {
+                displayAnimeData(response, false);
+                isLoading = false;
+            },
             error: function (err) {
                 console.error("Error loading anime data:", err);
+                $animeGrid.html('<div class="no-results">Error loading anime data. Please try again later.</div>');
+                isLoading = false;
             }
         });
     }
 
-    function displayAnimeData(animeList) {
+    function displayAnimeData(animeList, isAppending) {
         const $animeGrid = $('#animeGridContainer');
 
+        // Update hasNextPage flag based on API response
+        hasNextPage = animeList.data.Page.pageInfo.hasNextPage;
+
+        // Remove any existing loading indicator
+        $('.loading-indicator').remove();
+
+        // If this is a fresh load (not appending), clear the grid first
+        if (!isAppending) {
+            $animeGrid.empty();
+        }
+
+        // If no more pages or no results, show a message
+        if (animeList.data.Page.media.length === 0 && !isAppending) {
+            $animeGrid.html('<div class="no-results">No anime found matching your criteria.</div>');
+            return;
+        }
+
+        // Append anime cards to the grid
         for (const anime of animeList.data.Page.media) {
             const id = anime.id;
             const coverImage = anime.coverImage.large;
             const title = anime.title.english ?? anime.title.romaji;
 
             const animeCard = `
-                <div class="anime-card" data-link href="/anime/${id}">
+                <div class="animeCard" data-link href="/anime/${id}">
                     <div class="animeCoverImgContainer">
                         <img src="${coverImage}" alt="anime cover image">
                     </div>
@@ -154,6 +187,16 @@ export function renderBrowse() {
                 </div>`;
 
             $animeGrid.append(animeCard);
+        }
+
+        // Add a loading indicator if there are more pages
+        if (hasNextPage) {
+            $animeGrid.append('<div class="loading-indicator">Loading more...</div>');
+        }
+
+        // If we've loaded all pages, add an end message
+        if (!hasNextPage && isAppending) {
+            $animeGrid.append('<div class="no-results">You\'ve reached the end!</div>');
         }
     }
 
@@ -167,5 +210,41 @@ export function renderBrowse() {
             clearTimeout(timeout);
             timeout = setTimeout(() => func.apply(context, args), wait);
         };
+    }
+
+    function setupInfiniteScroll() {
+        // Using debounce to prevent excessive calls while scrolling
+        $(window).on('scroll', debounce(function() {
+            // Check if we're near the bottom of the page
+            if ($(window).scrollTop() + $(window).height() > $(document).height() - 200) {
+                if (hasNextPage && !isLoading) {
+                    loadMoreAnimeData();
+                }
+            }
+        }, 200));
+    }
+
+    function loadMoreAnimeData() {
+        if (isLoading || !hasNextPage) return;
+
+        isLoading = true;
+        currentPage++;
+        variables.page = currentPage;
+        console.log(`Loading more anime data (page ${currentPage})...`);
+
+        $.post({
+            url: 'https://graphql.anilist.co',
+            contentType: 'application/json',
+            data: JSON.stringify({query, variables}),
+            success: function(response) {
+                displayAnimeData(response, true);
+                isLoading = false;
+            },
+            error: function(err) {
+                console.error("Error loading more anime data:", err);
+                isLoading = false;
+                currentPage--; // Revert page increment on error
+            }
+        });
     }
 }

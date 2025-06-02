@@ -81,9 +81,9 @@ export function renderBrowse() {
     let currentPage = 1;
     let hasNextPage = true;
     let isLoading = false;
+    const intersectionObserver = new IntersectionObserver(loadMoreAnimeData)
 
     setupFilterEventListeners();
-    setupInfiniteScroll();
     loadAnimeData();
 
     function setupFilterEventListeners() {
@@ -192,6 +192,7 @@ export function renderBrowse() {
         // Add a loading indicator if there are more pages
         if (hasNextPage) {
             $animeGrid.append('<div class="loading-indicator">Loading more...</div>');
+            setupInfiniteScroll($('.loading-indicator')[0]);
         }
 
         // If we've loaded all pages, add an end message
@@ -212,39 +213,32 @@ export function renderBrowse() {
         };
     }
 
-    function setupInfiniteScroll() {
-        // Using debounce to prevent excessive calls while scrolling
-        $(window).on('scroll', debounce(function() {
-            // Check if we're near the bottom of the page
-            if ($(window).scrollTop() + $(window).height() > $(document).height() - 200) {
-                if (hasNextPage && !isLoading) {
-                    loadMoreAnimeData();
-                }
-            }
-        }, 200));
+    function setupInfiniteScroll(triggerElement) {
+        intersectionObserver.observe(triggerElement);
     }
 
-    function loadMoreAnimeData() {
+    function loadMoreAnimeData(trigger) {
         if (isLoading || !hasNextPage) return;
+        if (trigger[0].isIntersecting) {
+            isLoading = true;
+            currentPage++;
+            variables.page = currentPage;
+            console.log(`Loading more anime data (page ${currentPage})...`);
 
-        isLoading = true;
-        currentPage++;
-        variables.page = currentPage;
-        console.log(`Loading more anime data (page ${currentPage})...`);
-
-        $.post({
-            url: 'https://graphql.anilist.co',
-            contentType: 'application/json',
-            data: JSON.stringify({query, variables}),
-            success: function(response) {
-                displayAnimeData(response, true);
-                isLoading = false;
-            },
-            error: function(err) {
-                console.error("Error loading more anime data:", err);
-                isLoading = false;
-                currentPage--; // Revert page increment on error
-            }
-        });
+            $.post({
+                url: 'https://graphql.anilist.co',
+                contentType: 'application/json',
+                data: JSON.stringify({query, variables}),
+                success: function(response) {
+                    displayAnimeData(response, true);
+                    isLoading = false;
+                },
+                error: function(err) {
+                    console.error("Error loading more anime data:", err);
+                    isLoading = false;
+                    currentPage--; // Revert page increment on error
+                }
+            });
+        }
     }
 }

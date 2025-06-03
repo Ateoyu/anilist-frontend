@@ -1,3 +1,5 @@
+import { browsePageQuery} from "../queries/browsePageQuery.js";
+
 export function renderBrowse() {
     const $app = $('#app');
 
@@ -37,45 +39,15 @@ export function renderBrowse() {
     </div>
     `);
 
-    const query = `
-        query (
-          $page: Int = 1
-          $search: String
-          $season: MediaSeason
-          $seasonYear: Int
-          $genre: String
-          $isAdult: Boolean = false
-        ) {
-          Page(page: $page, perPage: 20) {
-            pageInfo {
-              hasNextPage
-            }
-            media(
-              type: ANIME
-              search: $search
-              season: $season
-              seasonYear: $seasonYear
-              genre: $genre
-              isAdult: $isAdult
-              sort: [POPULARITY_DESC, SCORE_DESC]
-            ) {
-              id
-              title {
-                english
-                romaji
-              }
-              coverImage {
-                large
-              }
-              seasonYear
-              season
-              genres
-              averageScore
-            }
-          }
+    const allGenresQuery =
+        `
+        query {
+            GenreCollection
         }
-    `;
+        `
 
+
+    const query = browsePageQuery();
 
     let variables = {};
     let currentPage = 1;
@@ -84,6 +56,25 @@ export function renderBrowse() {
     const intersectionObserver = new IntersectionObserver(loadMoreAnimeData)
 
     setupFilterEventListeners();
+
+    function loadGenreSelectOptions() {
+        $.post({
+            url: 'https://graphql.anilist.co',
+            contentType: 'application/json',
+                data: JSON.stringify({ query: allGenresQuery }),
+            success: function (response) {
+                console.log("Loaded genre options.");
+                response.data.GenreCollection.forEach(genre => {
+                    $("#animeGenreSelect").append(`<option value="${genre}">${genre}</option>`);
+                });
+            },
+            error: function (err) {
+                console.error("Error loading genre options:", err);
+            }
+        });
+    }
+
+    loadGenreSelectOptions();
     loadAnimeData();
 
     function setupFilterEventListeners() {
@@ -106,17 +97,17 @@ export function renderBrowse() {
         const seasonValue = $("#animeSeasonSelect").val();
 
         // Update variables object
-        setVariableIfValid(variables, 'search', searchValue);
-        setVariableIfValid(variables, 'genres', genreValue, (value) => [value]);
-        setVariableIfValid(variables, 'seasonYear', yearValue, (value) => parseInt(value));
-        setVariableIfValid(variables, 'season', seasonValue, (value) => value.toUpperCase());
+        setFilterVariableIfValid(variables, 'search', searchValue);
+        setFilterVariableIfValid(variables, 'genres', genreValue, (value) => [value]);
+        setFilterVariableIfValid(variables, 'seasonYear', yearValue, (value) => parseInt(value));
+        setFilterVariableIfValid(variables, 'season', seasonValue, (value) => value.toUpperCase());
 
         currentPage = 1;
         loadAnimeData();
     }
 
     // Update variables object
-    function setVariableIfValid(variablesObject, key, value, transform = (v) => v) {
+    function setFilterVariableIfValid(variablesObject, key, value, transform = (v) => v) {
         if (value && value !== "") {
             variablesObject[key] = transform(value);
         } else {
@@ -124,9 +115,23 @@ export function renderBrowse() {
         }
     }
 
+    // Based on the window width and height, set the perPage variable to optimise the network request size and frequency.
+    function setPerPageVarFromWindowSize(innerWidth, innerHeight) {
+        if (innerHeight > 600) {
+            switch (true) {
+                case (innerWidth >= 1536): return 50;
+                case (innerWidth >= 1280 && innerWidth < 1536): return 40;
+                case (innerWidth >= 1024 && innerWidth < 1280): return 30;
+                default: return 20;
+            }
+        }
+        return 20;
+    }
+
     function loadAnimeData() {
         isLoading = true;
         variables.page = 1;
+        variables.perPage = setPerPageVarFromWindowSize(window.innerWidth, window.innerHeight);
         currentPage = 1;
         console.log("Loading anime data...");
 

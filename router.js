@@ -1,6 +1,7 @@
-import { renderHome } from './pages/home.js';
-import { renderCharacter } from './pages/character.js';
+import {renderHome} from './pages/home.js';
+import {renderCharacter} from './pages/character.js';
 import {renderBrowse} from "./pages/browse.js";
+import {renderAnimeDetails} from "./pages/anime.js";
 
 export function router() {
     const path = window.location.pathname;
@@ -13,9 +14,9 @@ export function router() {
     } else if (path.startsWith('/browse')) {
         renderBrowse();
     } else if (path.startsWith('/anime/')) {
-        console.log("anime details view works.");
-    }
-    else {
+        const id = path.split('/')[2];
+        renderAnimeDetails(id);
+    } else {
         $('#app').html(`<p>404 Page Not Found</p>`);
     }
 }

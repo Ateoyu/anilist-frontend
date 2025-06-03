@@ -1,0 +1,146 @@
+// Variables
+$secondary-bg: #151f2d;
+$tertiary-bg: rgb(21, 31, 46);
+$text-color: rgba(159, 173, 189, 1);
+$border-radius: 8px;
+$shadow-light: 0 0 29px rgba(49, 54, 68, 0.25);
+$shadow-dark: 0 0 8px black;
+
+// Main styles
+#banner {
+  height: 400px;
+  background: no-repeat 50% 35%;
+  background-size: cover;
+}
+
+#info {
+  position: relative;
+  background: $secondary-bg;
+
+  .infoContainer {
+    display: grid;
+    grid-column-gap: 30px;
+    grid-template-columns: 215px auto;
+    padding-left: 50px;
+    padding-right: 50px;
+    color: $text-color;
+
+    .cover-wrap-overlap-banner {
+      position: relative;
+      margin-top: -125px;
+
+      .cover-image {
+        border-radius: $border-radius;
+        box-shadow: $shadow-light;
+        margin-top: 15px;
+        width: 100%;
+      }
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: auto 50px;
+      margin-bottom: 20px;
+      margin-top: 20px;
+      grid-gap: 15px;
+    }
+
+    .content {
+      h1, h2, h3, p {
+        color: $text-color;
+      }
+
+      h1 {
+        margin-bottom: 0;
+      }
+
+      h2 {
+        margin-top: 5px;
+        margin-bottom: 2px;
+      }
+
+      h3 {
+        margin: 0;
+      }
+    }
+  }
+}
+
+.mediaDataContainer {
+  display: grid;
+  grid-column-gap: 40px;
+  grid-template-columns: 208px auto;
+  position: relative;
+  padding-left: 50px;
+  padding-right: 50px;
+  margin-bottom: 40px;
+  color: $text-color;
+
+  .mediaData {
+    background: $tertiary-bg;
+    color: $text-color;
+    padding: 18px;
+    border-radius: $border-radius;
+
+    .data {
+      padding-bottom: 14px;
+
+      dt {
+        font-weight: bold;
+      }
+
+      dd {
+        margin: 0;
+      }
+    }
+  }
+}
+
+.mediaCharactersGridWrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-rows: auto;
+  grid-column-gap: 30px;
+  grid-row-gap: 30px;
+
+  .characterDiv {
+    position: relative;
+    display: grid;
+    box-shadow: $shadow-dark;
+    grid-template-columns: 150px auto;
+    column-gap: 20px;
+    border-radius: $border-radius;
+    overflow: hidden;
+
+    .characterThumbnailContainer {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .characterBriefDetails {
+      dt, dd {
+        margin: 0;
+        padding: 0;
+      }
+
+      dt {
+        font-weight: bold;
+      }
+
+      dd {
+        margin-bottom: 5px;
+      }
+    }
+
+    .characterPrimaryName {
+      font-weight: bold;
+    }
+  }
+}

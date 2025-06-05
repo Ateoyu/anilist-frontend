@@ -35,11 +35,9 @@ export function renderAnimeDetails(id) {
                 </div>
             </dl>
             <div class="mediaOverview">
-                <div class="mediaCharactersWrapper">
-                    <h2>Characters</h2>
-                    <div id="charactersGrid">
-                        <!-- Characters will be added here dynamically -->
-                    </div>
+                <h2>Characters</h2>
+                <div id="charactersGrid">
+                    <!-- Characters will be added here dynamically -->
                 </div>
             </div>
         </div>

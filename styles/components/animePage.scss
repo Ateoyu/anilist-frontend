@@ -21,7 +21,7 @@
 
     margin-top: -130px;
     border-radius: 10px;
-    box-shadow: 0 0 30px rgba(49,54,68, 100);
+    box-shadow: 0 0 30px rgba(49, 54, 68, 100);
 
     .coverImage {
       object-fit: cover;
@@ -49,7 +49,7 @@
   }
 }
 
-#animeDescriptionWrapper{
+#animeDescriptionWrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -80,7 +80,11 @@
 }
 
 .mediaDataContainer {
-  margin: 10px 25px;
+  margin: 25px;
+
+  @media only screen and (min-width: 600px) {
+    margin: 15px 25px 30px;
+  }
 
   .mediaData {
     display: grid;
@@ -112,40 +116,93 @@
     }
   }
 
-  #charactersGrid {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    grid-template-rows: auto;
-    justify-content: center;
-    gap: clamp(10px, 2vw, 25px); // Responsive gap using clamp
-    padding: clamp(15px, 4vw, 40px); // Responsive padding using clamp
+  .mediaOverview {
+    margin-top: 15px;
 
-    .characterDiv {
+    h2 {
+      color: whitesmoke;
+      margin-bottom: 10px;
+    }
+
+    #charactersGrid {
       position: relative;
       display: grid;
-      box-shadow: 2px 2px 4px desaturate($primary-colour, 30%);
-      border-radius: $primary-border-radius;
-      overflow: hidden;
-      height: 275px;
-      transition: all 0.3s ease-in-out;
+      grid-template-columns: repeat(3, 1fr); /* 3 characters per row on mobile */
+      justify-content: center;
+      gap: 10px; /* Smaller gap on mobile */
 
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 2px 7px 8px color.scale($primary-colour, $lightness: -20%);
+      .characterDiv {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        border-radius: $primary-border-radius;
+        overflow: hidden;
+        height: auto; /* Auto height instead of fixed */
+        transition: all 0.3s ease-in-out;
+        background-color: color.scale($primary-colour, $lightness: 5%);
+
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 2px 5px 8px color.scale($primary-colour, $lightness: -20%);
+        }
+
+        .characterThumbnailContainer {
+          width: 100%;
+          padding-bottom: 130%; /* Create aspect ratio for thumbnail */
+          position: relative;
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .characterBriefDetails {
+          padding: 8px;
+          margin: 0;
+          text-align: center;
+          background-color: color.scale($primary-colour, $lightness: 5%);
+          color: whitesmoke;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          flex: 1;
+
+          dt {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          dd {
+            margin: 0;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0.8;
+          }
+        }
       }
 
-      .characterThumbnailContainer {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        grid-area: 1/-1;
+      /* Tablet view - 4 characters per row */
+      @media only screen and (min-width: 600px) {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        padding: clamp(15px, 3vw, 30px);
+      }
 
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
+      /* Desktop view - 5 or more characters per row */
+      @media only screen and (min-width: 900px) {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: clamp(15px, 2vw, 25px);
+        padding: clamp(20px, 4vw, 40px);
       }
     }
   }

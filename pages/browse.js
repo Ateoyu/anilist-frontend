@@ -44,7 +44,7 @@ export function renderBrowse() {
         query {
             GenreCollection
         }
-        `
+        `;
 
 
     const query = browsePageQuery();
@@ -53,7 +53,7 @@ export function renderBrowse() {
     let currentPage = 1;
     let hasNextPage = true;
     let isLoading = false;
-    const intersectionObserver = new IntersectionObserver(loadMoreAnimeData)
+    const intersectionObserver = new IntersectionObserver(loadMoreAnimeData);
 
     setupFilterEventListeners();
 
@@ -223,7 +223,7 @@ export function renderBrowse() {
     }
 
     function loadMoreAnimeData(trigger) {
-        if (isLoading || !hasNextPage) return;
+        if (isLoading || !hasNextPage) {return;}
         if (trigger[0].isIntersecting) {
             isLoading = true;
             currentPage++;

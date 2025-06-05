@@ -25,7 +25,7 @@ export function getAnimeByIdQuery() {
               large
             }
             bannerImage
-            description(asHtml: true)
+            description(asHtml: false)
             characters(sort: [ROLE]) {
               edges {
                 role

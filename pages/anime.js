@@ -2,9 +2,48 @@ import { getAnimeByIdQuery } from "../queries/getAnimeByIdQuery.js";
 
 export function renderAnimeDetails(id) {
     const $app = $('#app');
+  // language=HTML
+    $app.html(`
+        <div id="bannerAndTitleWrapper">
+            <div id="banner"></div>
+            <div class="coverImageWrapper">
+                <img class="coverImage" alt="coverImage">
+            </div>
+            <div class="content">
+                <h1 class="englishTitle"></h1> 
+            </div>
+        </div>
+        
+        <div id="animeDescriptionWrapper">
+            <p id="animeDescription"></p>
+            <div class="expandContractButton">Read More</div>
+        </div>
 
-    // Show loading indicator
-    $app.html('<div class="loading-indicator">Loading anime details...</div>');
+        <div class="mediaDataContainer">
+            <dl class="mediaData">
+                <div class="data avgScore">
+                    <dt>Average Score: </dt>
+                </div>
+                <div class="data episodes">
+                    <dt>Episodes: </dt>
+                </div>
+                <div class="data startDate">
+                    <dt>Start Date: </dt>
+                </div>
+                <div class="data endDate">
+                    <dt>End Date: </dt>
+                </div>
+            </dl>
+            <div class="mediaOverview">
+                <div class="mediaCharactersWrapper">
+                    <h2>Characters</h2>
+                    <div id="charactersGrid">
+                        <!-- Characters will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        `);
 
     const query = getAnimeByIdQuery();
 
@@ -25,6 +64,33 @@ export function renderAnimeDetails(id) {
         }
     });
 
+    function appendCharacterCards(media) {
+        // Add characters to the grid
+        const $charactersGrid = $('#charactersGrid');
+        media.characters.edges.forEach(edge => {
+            const character = edge.node;
+            const characterRole = edge.role;
+            const characterId = character.id;
+            const characterName = character.name.full || character.name.native;
+            const characterNativeName = character.name.native;
+            const characterImage = character.image.large;
+
+            const characterElement = `
+                <div class="characterDiv" data-link href="/character/${characterId}">
+                    <div class="characterThumbnailContainer">
+                        <img class="characterThumbnailImg" src="${characterImage}" alt="${characterName}">
+                    </div>
+                    <dl class="characterBriefDetails">
+                        <dt class="characterPrimaryName">${characterName}</dt>
+                        ${character.name.full && character.name.native ? `<dd>${characterNativeName}</dd>` : ''}
+                        <dd>${characterRole}</dd>   
+                    </dl>
+                </div>`;
+
+            $charactersGrid.append(characterElement);
+        });
+    }
+
     function displayAnimeDetails(media) {
         // Prepare data for display
         const title = media.title.english || media.title.romaji;
@@ -36,101 +102,22 @@ export function renderAnimeDetails(id) {
         const averageScore = media.averageScore;
         const episodes = media.episodes;
 
-        // Format dates if available
-        let startDate = '';
-        if (media.startDate && media.startDate.day && media.startDate.month && media.startDate.year) {
-            startDate = `${media.startDate.day}/${media.startDate.month}/${media.startDate.year}`;
-        }
+        let startDate = `${media.startDate.day}/${media.startDate.month}/${media.startDate.year}`;
+        let endDate = `${media.endDate.day}/${media.endDate.month}/${media.endDate.year}`;
 
-        let endDate = '';
-        if (media.endDate && media.endDate.day && media.endDate.month && media.endDate.year) {
-            endDate = `${media.endDate.day}/${media.endDate.month}/${media.endDate.year}`;
-        }
+        $('#banner').css('background-image', `url(${bannerImage})`)
+        $('.coverImageWrapper .coverImage').attr('src', `${coverImage}`)
+        displayAnimeTitles(title, romajiTitle, nativeTitle);
+        $('#animeDescription').html(description);
+        $('.data.avgScore').append(`<dd>${averageScore}</dd>`)
+        $('.data.episodes').append(`<dd>${episodes}</dd>`)
+        $('.data.startDate').append(`<dd>${startDate}</dd>`)
+        $('.data.endDate').append(`<dd>${endDate}</dd>`)
+        appendCharacterCards(media);
+    }
 
-        // Build HTML template
-        $app.html(`
-        <div id="bannerAndInfoWrapper">
-            <div id="banner" style="background-image: url('${bannerImage}')"></div>
-
-            <div id="info">
-                <div class="infoContainer">
-                    <div class="cover-wrap-overlap-banner">
-                        <div class="cover-wrap-inner">
-                            <img src="${coverImage}" class="cover-image" alt="coverImage">
-                        </div>
-                    </div>
-
-                    <div class="content">
-                        <h1>${title}</h1>
-                        ${media.title.english && media.title.english !== media.title.romaji ? `<h2>${romajiTitle}</h2>` : ''}
-                        ${nativeTitle ? `<h3>${nativeTitle}</h3>` : ''}
-                        <p>${description}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mediaDataContainer">
-            <aside>
-                <dl class="mediaData">
-                    ${averageScore ? `
-                    <div class="data avgScore">
-                        <dt>Average Score</dt>
-                        <dd>${averageScore}</dd>
-                    </div>` : ''}
-                    ${episodes ? `
-                    <div class="data episodes">
-                        <dt>Episodes</dt>
-                        <dd>${episodes}</dd>
-                    </div>` : ''}
-                    ${startDate ? `
-                    <div class="data starDate">
-                        <dt>Start Date</dt>
-                        <dd>${startDate}</dd>
-                    </div>` : ''}
-                    ${endDate ? `
-                    <div class="data endDate">
-                        <dt>End Date</dt>
-                        <dd>${endDate}</dd>
-                    </div>` : ''}
-                </dl>
-            </aside>
-            <div class="mediaOverview">
-                <div class="mediaCharacters">
-                    <h2>Characters</h2>
-                    <div class="mediaCharactersGridWrapper" id="charactersGrid">
-                        <!-- Characters will be added here dynamically -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        `);
-
-        // Add characters to the grid
-        const $charactersGrid = $('#charactersGrid');
-        if (media.characters && media.characters.edges && media.characters.edges.length > 0) {
-            media.characters.edges.forEach(edge => {
-                const character = edge.node;
-                const characterId = character.id;
-                const characterName = character.name.full || character.name.native;
-                const characterNativeName = character.name.native;
-                const characterImage = character.image.large;
-
-                const characterElement = `
-                <div class="characterDiv" data-link href="/character/${characterId}">
-                    <div class="characterThumbnailContainer">
-                        <img class="characterThumbnailImg" src="${characterImage}" alt="characterImage">
-                    </div>
-                    <dl class="characterBriefDetails">
-                        <dt class="characterPrimaryName">${characterName}</dt>
-                        ${character.name.full && character.name.native ? `<dd>${characterNativeName}</dd>` : ''}
-                    </dl>
-                </div>`;
-
-                $charactersGrid.append(characterElement);
-            });
-        } else {
-            $charactersGrid.html('<p>No character information available.</p>');
-        }
+    function displayAnimeTitles(englishTitle, romajiTitle, nativeTitle) {
+        const $animeNameAndDesc = $('.content');
+        $animeNameAndDesc.find('h1').text(englishTitle ? englishTitle : romajiTitle ? romajiTitle : nativeTitle);
     }
 }

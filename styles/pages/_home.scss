@@ -1,0 +1,62 @@
+@use "../variables" as *;
+@use "sass:color";
+
+// Home page styles
+#searchForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px auto;
+  max-width: 500px;
+  padding: 20px;
+  background-color: color.scale($primary-colour, $lightness: 5%);
+  border-radius: $primary-border-radius;
+
+  @media (min-width: 600px) {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: color.scale($primary-colour, $lightness: 15%);
+    color: whitesmoke;
+    height: 36px;
+    -webkit-appearance: none; /* Remove default styling on iOS */
+    appearance: none; /* Standardize appearance across browsers */
+
+    &:focus {
+      outline: 2px solid color.scale($primary-colour, $lightness: 30%);
+    }
+
+    @media (min-width: 600px) {
+      width: auto;
+      margin-bottom: 0;
+      margin-right: 10px;
+    }
+  }
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3db4f2;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: color.scale(#3db4f2, $lightness: -30%);
+    }
+  }
+}
+
+h1 {
+  color: whitesmoke;
+  text-align: center;
+  margin: 20px 0;
+}

@@ -13,10 +13,9 @@ export function renderAnimeDetails(id) {
                 <h1 class="englishTitle"></h1> 
             </div>
         </div>
-        
+
         <div id="animeDescriptionWrapper">
             <p id="animeDescription"></p>
-            <div class="expandContractButton">Read More</div>
         </div>
 
         <div class="mediaDataContainer">
@@ -107,6 +106,7 @@ export function renderAnimeDetails(id) {
         $('.coverImageWrapper .coverImage').attr('src', `${coverImage}`)
         displayAnimeTitles(title, romajiTitle, nativeTitle);
         $('#animeDescription').html(description);
+        checkIfDescriptionExceedsDefaultHeight();
         $('.data.avgScore').append(`<dd>${averageScore}</dd>`)
         $('.data.episodes').append(`<dd>${episodes}</dd>`)
         $('.data.startDate').append(`<dd>${startDate}</dd>`)
@@ -117,5 +117,33 @@ export function renderAnimeDetails(id) {
     function displayAnimeTitles(englishTitle, romajiTitle, nativeTitle) {
         const $animeNameAndDesc = $('.content');
         $animeNameAndDesc.find('h1').text(englishTitle ? englishTitle : romajiTitle ? romajiTitle : nativeTitle);
+    }
+
+    function expandContractDescription() {
+        let $animeDescriptionWrapper = $('#animeDescriptionWrapper');
+        let $expandContractButton = $('.expandContractButton');
+        if ($animeDescriptionWrapper.hasClass('expanded') === false) {
+            $animeDescriptionWrapper.addClass('expanded');
+            $expandContractButton.text("Collapse");
+        } else {
+            $animeDescriptionWrapper.removeClass('expanded');
+            $expandContractButton.text("Expand");
+        }
+    }
+
+    function checkIfDescriptionExceedsDefaultHeight() {
+        let $animeDescriptionWrapper = $('#animeDescriptionWrapper');
+        let $description = $('#animeDescription');
+        const descriptionHeight = $description.height();
+        const maxDescriptionHeight = $animeDescriptionWrapper.height();
+        if (descriptionHeight > maxDescriptionHeight) {
+            const expandButton = $('<div>', {
+                class: 'expandContractButton',
+                text: 'Expand'
+            })
+            $description.addClass('overflowed');
+            $animeDescriptionWrapper.append(expandButton);
+            $('.expandContractButton').on('click', expandContractDescription);
+        }
     }
 }

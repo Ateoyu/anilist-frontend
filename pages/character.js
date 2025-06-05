@@ -27,13 +27,15 @@ export function renderCharacter(id) {
             const char = response.data.Character;
 
             $app.html(`
-              <h1 class="text-2xl mb-4">${char.name.full}</h1>
-              <img src="${char.image.large}" class="w-48 mb-4 rounded"  alt="${char.name.full} image"/>
-              <p class="text-gray-300">${char.description ?? 'No description.'}</p>
+              <div class="characterContainer">
+                <h1>${char.name.full}</h1>
+                <img src="${char.image.large}" alt="${char.name.full} image"/>
+                <p>${char.description ?? 'No description.'}</p>
+              </div>
             `);
         },
         error: function() {
-            $app.html(`<p class="text-red-500">Failed to load character.</p>`);
+            $app.html(`<p class="error-message">Failed to load character.</p>`);
         }
     });
 }

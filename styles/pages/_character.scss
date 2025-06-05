@@ -1,0 +1,39 @@
+@use "../variables" as *;
+@use "sass:color";
+
+// Character page styles
+.characterContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  color: whitesmoke;
+  
+  h1 {
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  img {
+    border-radius: $primary-border-radius;
+    margin-bottom: 20px;
+    max-width: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  p {
+    line-height: 1.6;
+    max-width: 800px;
+    background-color: color.scale($primary-colour, $lightness: 5%);
+    padding: 15px;
+    border-radius: $primary-border-radius;
+  }
+}
+
+// Error message
+.error-message {
+  color: #ff6b6b;
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2rem;
+}

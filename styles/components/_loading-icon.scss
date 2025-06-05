@@ -1,11 +1,12 @@
 @use "../variables" as *;
+@use "sass:color";
 
 .no-results {
   grid-column: 1 / -1;
   text-align: center;
   padding: 20px;
   font-size: 1.2rem;
-  color: lighten($primary-colour, 40%);
+  color: color.scale($primary-colour, $lightness: 40%);
 }
 
 .loading-indicator {
@@ -14,7 +15,7 @@
   padding: 20px;
   margin-top: 10px;
   font-size: 1rem;
-  color: lighten($primary-colour, 40%);
+  color: color.scale($primary-colour, $lightness: 40%);
   position: relative;
 
   &::after {
@@ -23,8 +24,8 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    border: 3px solid rgba(lighten($primary-colour, 40%), 0.3);
-    border-top-color: lighten($primary-colour, 40%);
+    border: 3px solid color.scale($primary-colour, $lightness: 40%, $alpha: -70%);
+    border-top-color: color.scale($primary-colour, $lightness: 40%);
     animation: spin 1s infinite linear;
     margin: 10px auto 0;
   }

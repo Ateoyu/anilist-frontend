@@ -1,4 +1,4 @@
-import { browsePageQuery} from "../queries/browsePageQuery.js";
+import {browsePageQuery} from "../queries/browsePageQuery.js";
 
 export function renderBrowse() {
     const $app = $('#app');
@@ -56,25 +56,8 @@ export function renderBrowse() {
     const intersectionObserver = new IntersectionObserver(loadMoreAnimeData);
 
     setupFilterEventListeners();
-
-    function loadGenreSelectOptions() {
-        $.post({
-            url: 'https://graphql.anilist.co',
-            contentType: 'application/json',
-                data: JSON.stringify({ query: allGenresQuery }),
-            success: function (response) {
-                console.log("Loaded genre options.");
-                response.data.GenreCollection.forEach(genre => {
-                    $("#animeGenreSelect").append(`<option value="${genre}">${genre}</option>`);
-                });
-            },
-            error: function (err) {
-                console.error("Error loading genre options:", err);
-            }
-        });
-    }
-
     loadGenreSelectOptions();
+    loadYearSelectOptions();
     loadAnimeData();
 
     function setupFilterEventListeners() {
@@ -89,6 +72,32 @@ export function renderBrowse() {
         });
     }
 
+    function loadGenreSelectOptions() {
+        $.post({
+            url: 'https://graphql.anilist.co',
+            contentType: 'application/json',
+            data: JSON.stringify({query: allGenresQuery}),
+            success: function (response) {
+                console.log("Loaded genre options.");
+                response.data.GenreCollection.forEach(genre => {
+                    $("#animeGenreSelect").append(`<option value="${genre}">${genre}</option>`);
+                });
+            },
+            error: function (err) {
+                console.error("Error loading genre options:", err);
+            }
+        });
+    }
+
+    function loadYearSelectOptions() {
+        const $yearSelect = $("#animeYearSelect");
+        for (let year = 2025; year >= 1970; year--) {
+            $yearSelect.append(`<option value="${year}">${year}</option>`);
+        }
+
+        console.log(`Loaded year options from ${2025} to ${1970}.`);
+    }
+
     function updateFilters() {
         // Get values from filters
         const searchValue = $("#animeSearchInput").val();
@@ -98,7 +107,7 @@ export function renderBrowse() {
 
         // Update variables object
         setFilterVariableIfValid(variables, 'search', searchValue);
-        setFilterVariableIfValid(variables, 'genres', genreValue, (value) => [value]);
+        setFilterVariableIfValid(variables, 'genre', genreValue);
         setFilterVariableIfValid(variables, 'seasonYear', yearValue, (value) => parseInt(value));
         setFilterVariableIfValid(variables, 'season', seasonValue, (value) => value.toUpperCase());
 
@@ -119,10 +128,14 @@ export function renderBrowse() {
     function setPerPageVarFromWindowSize(innerWidth, innerHeight) {
         if (innerHeight > 600) {
             switch (true) {
-                case (innerWidth >= 1536): return 50;
-                case (innerWidth >= 1280 && innerWidth < 1536): return 40;
-                case (innerWidth >= 1024 && innerWidth < 1280): return 30;
-                default: return 20;
+                case (innerWidth >= 1536):
+                    return 50;
+                case (innerWidth >= 1280 && innerWidth < 1536):
+                    return 40;
+                case (innerWidth >= 1024 && innerWidth < 1280):
+                    return 30;
+                default:
+                    return 20;
             }
         }
         return 20;
@@ -143,7 +156,7 @@ export function renderBrowse() {
             url: 'https://graphql.anilist.co',
             contentType: 'application/json',
             data: JSON.stringify({query, variables}),
-            success: function(response) {
+            success: function (response) {
                 displayAnimeData(response, false);
                 isLoading = false;
             },
@@ -223,7 +236,9 @@ export function renderBrowse() {
     }
 
     function loadMoreAnimeData(trigger) {
-        if (isLoading || !hasNextPage) {return;}
+        if (isLoading || !hasNextPage) {
+            return;
+        }
         if (trigger[0].isIntersecting) {
             isLoading = true;
             currentPage++;
@@ -234,11 +249,11 @@ export function renderBrowse() {
                 url: 'https://graphql.anilist.co',
                 contentType: 'application/json',
                 data: JSON.stringify({query, variables}),
-                success: function(response) {
+                success: function (response) {
                     displayAnimeData(response, true);
                     isLoading = false;
                 },
-                error: function(err) {
+                error: function (err) {
                     console.error("Error loading more anime data:", err);
                     isLoading = false;
                     currentPage--; // Revert page increment on error

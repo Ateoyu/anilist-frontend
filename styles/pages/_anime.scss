@@ -12,6 +12,10 @@
     width: 100%;
     background: no-repeat 50% 35%;
     background-size: cover;
+
+    @media only screen and (min-width: 600px) {
+      height: 30vh;
+    }
   }
 
   .coverImageWrapper {
@@ -38,10 +42,6 @@
 
   @media only screen and (min-width: 600px) {
     align-items: unset;
-
-    @media only screen and (min-width: 600px) {
-      height: 30vh;
-    }
 
     .coverImageWrapper {
       margin-left: 10vw;

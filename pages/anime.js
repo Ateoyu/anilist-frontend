@@ -1,46 +1,49 @@
-import { getAnimeByIdQuery } from "../queries/getAnimeByIdQuery.js";
+import {getAnimeByIdQuery} from "../queries/getAnimeByIdQuery.js";
 
 export function renderAnimeDetails(id) {
     const $app = $('#app');
-  // language=HTML
+
+    // language=HTML
     $app.html(`
-        <div id="bannerAndTitleWrapper">
-            <div id="banner"></div>
-            <div class="coverImageWrapper">
-                <img class="coverImage" alt="coverImage">
+        <div id="banner"></div>
+        <div id="widthLimiter">
+            <div id="bannerAndTitleWrapper">
+                <div class="coverImageWrapper">
+                    <img class="coverImage" alt="coverImage">
+                </div>
+                <div class="content">
+                    <h1 class="englishTitle"></h1>
+                    <div id="animeDescriptionWrapper">
+                        <p id="animeDescription"></p>
+                    </div>
+                </div>
             </div>
-            <div class="content">
-                <h1 class="englishTitle"></h1> 
-            </div>
-        </div>
 
-        <div id="animeDescriptionWrapper">
-            <p id="animeDescription"></p>
-        </div>
 
-        <div class="mediaDataContainer">
-            <dl class="mediaData">
-                <div class="data avgScore">
-                    <dt>Average Score: </dt>
-                </div>
-                <div class="data episodes">
-                    <dt>Episodes: </dt>
-                </div>
-                <div class="data startDate">
-                    <dt>Start Date: </dt>
-                </div>
-                <div class="data endDate">
-                    <dt>End Date: </dt>
-                </div>
-            </dl>
-            <div class="mediaOverview">
-                <h2>Characters</h2>
-                <div id="charactersGrid">
-                    <!-- Characters will be added here dynamically -->
+            <div class="mediaDataContainer">
+                <dl class="mediaData">
+                    <div class="data avgScore">
+                        <dt>Average Score:</dt>
+                    </div>
+                    <div class="data episodes">
+                        <dt>Episodes:</dt>
+                    </div>
+                    <div class="data startDate">
+                        <dt>Start Date:</dt>
+                    </div>
+                    <div class="data endDate">
+                        <dt>End Date:</dt>
+                    </div>
+                </dl>
+                <div class="mediaOverview">
+                    <h2>Characters</h2>
+                    <div id="charactersGrid">
+                        <!-- Characters will be added here dynamically -->
+                    </div>
                 </div>
             </div>
         </div>
-        `);
+    `);
 
     const query = getAnimeByIdQuery();
 
@@ -50,12 +53,15 @@ export function renderAnimeDetails(id) {
         contentType: 'application/json',
         data: JSON.stringify({
             query: query,
-            variables: { id: parseInt(id) }
+            variables: {id: parseInt(id)}
         }),
-        success: function(response) {
+        success: function (response) {
             displayAnimeDetails(response.data.Media);
+            // Initialise expand/collapse functionality after content is loaded
+            // (does not work consistently on an initial load without this)
+            requestAnimationFrame(handleExpandCollapseLogic);
         },
-        error: function(err) {
+        error: function (err) {
             console.error("Error loading anime details:", err);
             $app.html('<div class="error-message">Error loading anime details. Please try again later.</div>');
         }
@@ -106,7 +112,6 @@ export function renderAnimeDetails(id) {
         $('.coverImageWrapper .coverImage').attr('src', `${coverImage}`)
         displayAnimeTitles(title, romajiTitle, nativeTitle);
         $('#animeDescription').html(description);
-        checkIfDescriptionExceedsDefaultHeight();
         $('.data.avgScore').append(`<dd>${averageScore}</dd>`)
         $('.data.episodes').append(`<dd>${episodes}</dd>`)
         $('.data.startDate').append(`<dd>${startDate}</dd>`)
@@ -119,7 +124,7 @@ export function renderAnimeDetails(id) {
         $animeNameAndDesc.find('h1').text(englishTitle ? englishTitle : romajiTitle ? romajiTitle : nativeTitle);
     }
 
-    function expandContractDescription() {
+    function expandCollapseDescription() {
         let $animeDescriptionWrapper = $('#animeDescriptionWrapper');
         let $expandContractButton = $('.expandContractButton');
         if ($animeDescriptionWrapper.hasClass('expanded') === false) {
@@ -131,19 +136,69 @@ export function renderAnimeDetails(id) {
         }
     }
 
-    function checkIfDescriptionExceedsDefaultHeight() {
-        let $animeDescriptionWrapper = $('#animeDescriptionWrapper');
-        let $description = $('#animeDescription');
-        const descriptionHeight = $description.height();
-        const maxDescriptionHeight = $animeDescriptionWrapper.height();
-        if (descriptionHeight > maxDescriptionHeight) {
-            const expandButton = $('<div>', {
-                class: 'expandContractButton',
-                text: 'Expand'
-            })
-            $description.addClass('overflowed');
-            $animeDescriptionWrapper.append(expandButton);
-            $('.expandContractButton').on('click', expandContractDescription);
+    function handleExpandCollapseLogic() {
+        if (window.innerWidth < 800) {
+            checkIfDescriptionExceedsDefaultHeight();
+        } else {
+            removeExpandCollapseFunctionality($('#animeDescription'), $('#animeDescriptionWrapper'));
         }
+    }
+
+    // Debounced resize handler for description expandCollapse
+    window.onresize = debounce(handleExpandCollapseLogic, 100);
+
+    function addExpandCollapseFunctionality($description, $animeDescriptionWrapper) {
+        // Check if the button already exists to prevent duplicates
+        if ($animeDescriptionWrapper.find('.expandContractButton').length > 0) {
+            return;
+        }
+
+        const expandButton = $('<div>', {
+            class: 'expandContractButton',
+            text: 'Expand'
+        })
+        $description.addClass('overflowed');
+        $animeDescriptionWrapper.append(expandButton);
+        $('.expandContractButton').off('click').on('click', expandCollapseDescription);
+    }
+
+
+    function removeExpandCollapseFunctionality($description, $animeDescriptionWrapper) {
+        $description.removeClass('overflowed');
+        $animeDescriptionWrapper.removeClass('expanded');
+        $animeDescriptionWrapper.find('.expandContractButton').remove();
+    }
+
+    function checkIfDescriptionExceedsDefaultHeight() {
+        const $animeDescriptionWrapper = $('#animeDescriptionWrapper');
+        const $description = $('#animeDescription');
+
+        const wasExpanded = $animeDescriptionWrapper.hasClass('expanded');
+        // Temporarily remove any existing functionality to get a clean measurement
+        removeExpandCollapseFunctionality($description, $animeDescriptionWrapper);
+
+        // Get the natural height without any constraints
+        const descriptionHeight = $description[0].scrollHeight;
+        const maxDescriptionHeight = 150;
+
+        if (descriptionHeight > maxDescriptionHeight) {
+            addExpandCollapseFunctionality($description, $animeDescriptionWrapper);
+            // Restore expanded state if it was previously expanded
+            if (wasExpanded) {
+                $animeDescriptionWrapper.addClass('expanded');
+                $('.expandContractButton').text("Collapse");
+            }
+        }
+    }
+
+    // Utility function: debounce to prevent excessive function calls
+    function debounce(func, wait) {
+        let timeout;
+        return function () {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
     }
 }

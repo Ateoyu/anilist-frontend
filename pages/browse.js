@@ -3,40 +3,43 @@ import {browsePageQuery} from "../queries/browsePageQuery.js";
 export function renderBrowse() {
     const $app = $('#app');
 
+    // language=HTML
     $app.html(`
-        <div id="animeFilterContainer">
-          <label>
-            Search
-            <input type="text" id="animeSearchInput" placeholder="Anime Title...">
-          </label>
-          <label>
-            Genre
-            <select id="animeGenreSelect">
-              <!-- Filled with all possible genres by API request -->
-              <option value="">All</option>
-            </select>
-          </label>
-          <label>
-            Release Year
-            <select id="animeYearSelect">
-              <!-- Filled with all possible release years by API request -->
-              <option value="">All</option>
-            </select>
-          </label>
-          <label>
-            Season
-            <select id="animeSeasonSelect">
-              <option value="">All</option>
-              <option value="Winter">Winter</option>
-              <option value="Spring">Spring</option>
-              <option value="Summer">Summer</option>
-              <option value="Fall">Fall</option>
-            </select>
-          </label>
+        <div id="widthLimiterBrowse">
+            <div id="animeFilterContainer">
+                <label>
+                    Search
+                    <input type="text" id="animeSearchInput" placeholder="Anime Title...">
+                </label>
+                <label>
+                    Genre
+                    <select id="animeGenreSelect">
+                        <!-- Filled with all possible genres by API request -->
+                        <option value="">All</option>
+                    </select>
+                </label>
+                <label>
+                    Release Year
+                    <select id="animeYearSelect">
+                        <!-- Filled with all possible release years by API request -->
+                        <option value="">All</option>
+                    </select>
+                </label>
+                <label>
+                    Season
+                    <select id="animeSeasonSelect">
+                        <option value="">All</option>
+                        <option value="Winter">Winter</option>
+                        <option value="Spring">Spring</option>
+                        <option value="Summer">Summer</option>
+                        <option value="Fall">Fall</option>
+                    </select>
+                </label>
+            </div>
+            <div id="animeGridContainer">
+                <!-- Filled with AnimeCards by API request -->
+            </div>
         </div>
-        <div id="animeGridContainer">
-        <!-- Filled with AnimeCards by API request -->
-    </div>
     `);
 
     const allGenresQuery =

@@ -2,29 +2,37 @@
 @use "sass:color";
 
 // Banner and Title Section
-#bannerAndTitleWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 
-  #banner {
-    height: 20vh;
-    width: 100%;
-    background: no-repeat 50% 35%;
-    background-size: cover;
+#banner {
+  height: 20vh;
+  width: 100%;
+  background: no-repeat 50% 35%;
+  background-size: cover;
 
-    @media only screen and (min-width: 600px) {
-      height: 30vh;
-    }
+  @media only screen and (min-width: 600px) {
+    height: 30vh;
+    max-height: 400px;
   }
+}
+
+#widthLimiter {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+#bannerAndTitleWrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-content: center;
 
   .coverImageWrapper {
-    overflow: hidden;
     max-width: 200px;
     width: 25vw;
     min-width: 100px;
 
-    margin-top: -130px;
+    overflow: hidden;
+    margin: -130px auto 0;
     border-radius: 10px;
     box-shadow: 0 0 30px rgba(49, 54, 68, 100);
 
@@ -34,20 +42,26 @@
       width: 100%;
       height: 100%
     }
-  }
 
+    @media only screen and (min-width: 800px) {
+      margin: -150px 0 0;
+      max-width: unset;
+      width: 100%;
+    }
+  }
   .content {
     color: whitesmoke;
   }
 
-  @media only screen and (min-width: 600px) {
-    align-items: unset;
-
-    .coverImageWrapper {
-      margin-left: 10vw;
-    }
+  @media only screen and (min-width: 800px) {
+    grid-template-columns: 25% 1fr;
+    gap: 25px;
   }
 }
+
+
+
+
 
 // Anime Description Section
 #animeDescriptionWrapper {
@@ -58,7 +72,6 @@
   color: whitesmoke;
   background-color: color.scale($primary-colour, $lightness: 2%);
 
-  margin: 10px 25px 0;
   border-radius: $primary-border-radius;
   max-height: 150px;
   overflow: hidden;
@@ -84,15 +97,15 @@
     color: color.scale(whitesmoke, $lightness: -25%);
     box-shadow: 0 0 5px 15px color.scale($primary-colour, $lightness: 2%);
   }
+
+  @media only screen and (min-width: 800px) {
+    max-height: unset;
+  }
 }
 
 // Media Data Section
 .mediaDataContainer {
-  margin: 25px;
-
-  @media only screen and (min-width: 600px) {
-    margin: 15px 25px 30px;
-  }
+  margin-top: 25px;
 
   .mediaData {
     display: grid;
@@ -144,14 +157,14 @@
       @media only screen and (min-width: 600px) {
         grid-template-columns: repeat(4, 1fr);
         gap: 15px;
-        padding: clamp(15px, 3vw, 30px);
+        //padding: 0 clamp(15px, 3vw, 30px) clamp(15px, 3vw, 30px);
       }
 
       /* Desktop view - 5 or more characters per row */
       @media only screen and (min-width: 900px) {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: clamp(15px, 2vw, 25px);
-        padding: clamp(20px, 4vw, 40px);
+        //padding: 0 clamp(20px, 4vw, 40px) clamp(20px, 4vw, 40px);
       }
 
       /* Character card component styles */

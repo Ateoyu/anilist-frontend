@@ -173,11 +173,7 @@ export function renderBrowse() {
 
     function displayAnimeData(animeList, isAppending) {
         const $animeGrid = $('#animeGridContainer');
-
-        // Update hasNextPage flag based on API response
         hasNextPage = animeList.data.Page.pageInfo.hasNextPage;
-
-        // Remove any existing loading indicator
         $('.loading-indicator').remove();
 
         // If this is a fresh load (not appending), clear the grid first
@@ -197,9 +193,12 @@ export function renderBrowse() {
             const coverImage = anime.coverImage.large;
             const title = anime.title.english ?? anime.title.romaji;
 
+            // Store the cover image URL in sessionStorage for reuse in anime view
+            sessionStorage.setItem(`anime-cover-${id}`, coverImage);
+
             const animeCard = `
                 <div class="animeCard" data-link href="/anime/${id}">
-                    <div class="animeCoverImgContainer">
+                    <div class="animeCoverImgContainer" style="view-transition-name: anime-cover-${id};">
                         <img src="${coverImage}" alt="anime cover image">
                     </div>
                     <div class="animeTextContainer">

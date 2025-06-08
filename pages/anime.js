@@ -3,13 +3,16 @@ import {getAnimeByIdQuery} from "../queries/getAnimeByIdQuery.js";
 export function renderAnimeDetails(id) {
     const $app = $('#app');
 
+    // Check if we have a cached cover image from browse view
+    const cachedCoverImage = sessionStorage.getItem(`anime-cover-${id}`);
+
     // language=HTML
     $app.html(`
         <div id="banner"></div>
         <div id="widthLimiter">
             <div id="bannerAndTitleWrapper">
                 <div class="coverImageWrapper">
-                    <img class="coverImage" alt="coverImage">
+                    <img class="coverImage" alt="coverImage" style="view-transition-name: anime-cover-${id};" ${cachedCoverImage ? `src="${cachedCoverImage}"` : ''}>
                 </div>
                 <div class="content">
                     <h1 class="englishTitle"></h1>
@@ -94,8 +97,8 @@ export function renderAnimeDetails(id) {
         });
     }
 
+
     function displayAnimeDetails(media) {
-        // Prepare data for display
         const title = media.title.english || media.title.romaji;
         const nativeTitle = media.title.native;
         const romajiTitle = media.title.romaji;
@@ -109,7 +112,7 @@ export function renderAnimeDetails(id) {
         let endDate = `${media.endDate.day}/${media.endDate.month}/${media.endDate.year}`;
 
         $('#banner').css('background-image', `url(${bannerImage})`)
-        $('.coverImageWrapper .coverImage').attr('src', `${coverImage}`)
+        setCoverImageIfNotCached(coverImage);
         displayAnimeTitles(title, romajiTitle, nativeTitle);
         $('#animeDescription').html(description);
         $('.data.avgScore').append(`<dd>${averageScore}</dd>`)
@@ -117,6 +120,13 @@ export function renderAnimeDetails(id) {
         $('.data.startDate').append(`<dd>${startDate}</dd>`)
         $('.data.endDate').append(`<dd>${endDate}</dd>`)
         appendCharacterCards(media);
+    }
+
+    function setCoverImageIfNotCached(coverImage) {
+        const $coverImage = $('.coverImageWrapper .coverImage');
+        if (!$coverImage.attr('src')) {
+            $coverImage.attr('src', `${coverImage}`);
+        }
     }
 
     function displayAnimeTitles(englishTitle, romajiTitle, nativeTitle) {
@@ -148,18 +158,15 @@ export function renderAnimeDetails(id) {
     window.onresize = debounce(handleExpandCollapseLogic, 100);
 
     function addExpandCollapseFunctionality($description, $animeDescriptionWrapper) {
-        // Check if the button already exists to prevent duplicates
-        if ($animeDescriptionWrapper.find('.expandContractButton').length > 0) {
-            return;
+        if ($animeDescriptionWrapper.find('.expandContractButton').length === 0) {
+            const expandButton = $('<div>', {
+                class: 'expandContractButton',
+                text: 'Expand'
+            })
+            $description.addClass('overflowed');
+            $animeDescriptionWrapper.append(expandButton);
+            $('.expandContractButton').off('click').on('click', expandCollapseDescription);
         }
-
-        const expandButton = $('<div>', {
-            class: 'expandContractButton',
-            text: 'Expand'
-        })
-        $description.addClass('overflowed');
-        $animeDescriptionWrapper.append(expandButton);
-        $('.expandContractButton').off('click').on('click', expandCollapseDescription);
     }
 
 
@@ -173,21 +180,11 @@ export function renderAnimeDetails(id) {
         const $animeDescriptionWrapper = $('#animeDescriptionWrapper');
         const $description = $('#animeDescription');
 
-        const wasExpanded = $animeDescriptionWrapper.hasClass('expanded');
-        // Temporarily remove any existing functionality to get a clean measurement
-        removeExpandCollapseFunctionality($description, $animeDescriptionWrapper);
-
-        // Get the natural height without any constraints
         const descriptionHeight = $description[0].scrollHeight;
         const maxDescriptionHeight = 150;
 
         if (descriptionHeight > maxDescriptionHeight) {
             addExpandCollapseFunctionality($description, $animeDescriptionWrapper);
-            // Restore expanded state if it was previously expanded
-            if (wasExpanded) {
-                $animeDescriptionWrapper.addClass('expanded');
-                $('.expandContractButton').text("Collapse");
-            }
         }
     }
 

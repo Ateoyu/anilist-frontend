@@ -1,6 +1,24 @@
 @use "../variables" as *;
 @use "sass:color";
 
+// View Transition styles
+::view-transition-old(anime-cover),
+::view-transition-new(anime-cover) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+}
+
+// Ensure view transition name is properly applied
+.animeCoverImgContainer {
+  contain: layout;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
 #widthLimiterBrowse {
   max-width: 1440px;
   margin: 0 auto;
@@ -114,6 +132,7 @@
       font-size: clamp(12px, 1.5vw, 10px);
       color: whitesmoke;
       background: linear-gradient(to top, rgba(0,0,0,0.9), transparent 80%);
+      z-index: 1;
 
       h2 {
         margin: 0;

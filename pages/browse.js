@@ -42,13 +42,11 @@ export function renderBrowse() {
         </div>
     `);
 
-    const allGenresQuery =
-        `
-        query {
-            GenreCollection
-        }
-        `;
-
+    const allGenresQuery = `
+      query {
+        GenreCollection
+      }
+    `;
 
     const query = browsePageQuery();
 
@@ -58,14 +56,37 @@ export function renderBrowse() {
     let isLoading = false;
     const intersectionObserver = new IntersectionObserver(loadMoreAnimeData);
 
-    const ANIME_DATA_KEY = 'browse-page-data';
-    const SCROLL_POSITION_KEY = 'browse-page-scroll-position';
-    const GENRES_KEY = 'browse-page-genres';
+    // Initialize the page
+    initializePage();
 
-    setupFilterEventListeners();
-    loadGenreSelectOptions();
-    loadYearSelectOptions();
-    loadAnimeData();
+    //todo: cache the API responses to avoid excess API calls.
+
+    // function loadCachedData() {
+    //     const cachedAnime = localStorage.getItem(ANIME_DATA_KEY);
+    //     const cachedScrollPosition = localStorage.getItem(SCROLL_POSITION_KEY);
+    //     const cachedGenres = localStorage.getItem(GENRES_KEY);
+    //
+    //     if (cachedAnime) {
+    //
+    //     }
+    // }
+
+    function initializePage() {
+        setupFilterEventListeners();
+
+        const genresLoaded = loadGenreSelectOptions();
+        const yearsLoaded = loadYearSelectOptions();
+
+        // Wait for all options to load, then apply filters and load data
+        Promise.all([genresLoaded, yearsLoaded])
+            .then(() => {
+                loadFiltersFromUrl();
+                loadAnimeData();
+            })
+            .catch(error => {
+                console.error("Error initializing page:", error);
+            });
+    }
 
     function setupFilterEventListeners() {
         // Text search input (with debounce)
@@ -80,29 +101,36 @@ export function renderBrowse() {
     }
 
     function loadGenreSelectOptions() {
-        $.post({
-            url: 'https://graphql.anilist.co',
-            contentType: 'application/json',
-            data: JSON.stringify({query: allGenresQuery}),
-            success: function (response) {
-                console.log("Loaded genre options.");
-                response.data.GenreCollection.forEach(genre => {
-                    $("#animeGenreSelect").append(`<option value="${genre}">${genre}</option>`);
-                });
-            },
-            error: function (err) {
-                console.error("Error loading genre options:", err);
-            }
+        return new Promise((resolve, reject) => {
+            $.post({
+                url: 'https://graphql.anilist.co',
+                contentType: 'application/json',
+                data: JSON.stringify({query: allGenresQuery}),
+                success: function (response) {
+                    console.log("Loaded genre options.");
+                    response.data.GenreCollection.forEach(genre => {
+                        $("#animeGenreSelect").append(`<option value="${genre}">${genre}</option>`);
+                    });
+                    resolve();
+                },
+                error: function (err) {
+                    console.error("Error loading genre options:", err);
+                    reject(err);
+                }
+            });
         });
     }
 
     function loadYearSelectOptions() {
-        const $yearSelect = $("#animeYearSelect");
-        for (let year = 2025; year >= 1970; year--) {
-            $yearSelect.append(`<option value="${year}">${year}</option>`);
-        }
+        return new Promise((resolve) => {
+            const $yearSelect = $("#animeYearSelect");
+            for (let year = 2025; year >= 1970; year--) {
+                $yearSelect.append(`<option value="${year}">${year}</option>`);
+            }
 
-        console.log(`Loaded year options from ${2025} to ${1970}.`);
+            console.log(`Loaded year options from ${2025} to ${1970}.`);
+            resolve();
+        });
     }
 
     function updateFilters() {
@@ -118,8 +146,64 @@ export function renderBrowse() {
         setFilterVariableIfValid(variables, 'seasonYear', yearValue, (value) => parseInt(value));
         setFilterVariableIfValid(variables, 'season', seasonValue, (value) => value.toUpperCase());
 
+        // Update URL with current filter values
+        updateUrlWithFilters(searchValue, genreValue, yearValue, seasonValue);
+
         currentPage = 1;
         loadAnimeData();
+    }
+
+    function updateUrlWithFilters(search, genre, year, season) {
+        const url = new URL(window.location.href);
+
+        // Clear existing parameters
+        url.search = '';
+
+        // Add parameters if they have values
+        if (search) url.searchParams.set('search', search);
+        if (genre) url.searchParams.set('genre', genre);
+        if (year) url.searchParams.set('year', year);
+        if (season) url.searchParams.set('season', season);
+
+        // Update the URL without reloading the page
+        window.history.pushState({}, '', url);
+    }
+
+    function loadFiltersFromUrl() {
+        const url = new URL(window.location.href);
+
+        const search = url.searchParams.get('search');
+        const genre = url.searchParams.get('genre');
+        const year = url.searchParams.get('year');
+        const season = url.searchParams.get('season');
+
+        if (search) $("#animeSearchInput").val(search);
+
+        if (genre) {
+            const $genreSelect = $("#animeGenreSelect");
+            if ($genreSelect.find(`option[value="${genre}"]`).length > 0) {
+                $genreSelect.val(genre);
+            }
+        }
+
+        if (year) {
+            const $yearSelect = $("#animeYearSelect");
+            if ($yearSelect.find(`option[value="${year}"]`).length > 0) {
+                $yearSelect.val(year);
+            }
+        }
+
+        if (season) {
+            const $seasonSelect = $("#animeSeasonSelect");
+            if ($seasonSelect.find(`option[value="${season}"]`).length > 0) {
+                $seasonSelect.val(season);
+            }
+        }
+
+        setFilterVariableIfValid(variables, 'search', search);
+        setFilterVariableIfValid(variables, 'genre', genre);
+        setFilterVariableIfValid(variables, 'seasonYear', year, (value) => parseInt(value));
+        setFilterVariableIfValid(variables, 'season', season, (value) => value.toUpperCase());
     }
 
     // Update variables object

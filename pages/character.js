@@ -11,7 +11,7 @@ export function renderCharacter(id) {
         image {
           large
         }
-        description
+        description(asHtml: true)
       }
     }
   `;
@@ -30,7 +30,7 @@ export function renderCharacter(id) {
               <div class="characterContainer">
                 <h1>${char.name.full}</h1>
                 <img src="${char.image.large}" alt="${char.name.full} image"/>
-                <p>${char.description ?? 'No description.'}</p>
+                ${char.description ?? '<p>No description.</p>'}
               </div>
             `);
         },

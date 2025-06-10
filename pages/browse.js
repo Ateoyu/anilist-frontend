@@ -58,6 +58,10 @@ export function renderBrowse() {
     let isLoading = false;
     const intersectionObserver = new IntersectionObserver(loadMoreAnimeData);
 
+    const ANIME_DATA_KEY = 'browse-page-data';
+    const SCROLL_POSITION_KEY = 'browse-page-scroll-position';
+    const GENRES_KEY = 'browse-page-genres';
+
     setupFilterEventListeners();
     loadGenreSelectOptions();
     loadYearSelectOptions();
@@ -127,7 +131,7 @@ export function renderBrowse() {
         }
     }
 
-    // Based on the window width and height, set the perPage variable to optimise the network request size and frequency.
+     // Based on the window width and height, set the perPage variable to optimise the network request size and frequency.
     function setPerPageVarFromWindowSize(innerWidth, innerHeight) {
         if (innerHeight > 600) {
             switch (true) {
@@ -169,6 +173,33 @@ export function renderBrowse() {
                 isLoading = false;
             }
         });
+    }
+
+    function loadMoreAnimeData(trigger) {
+        if (isLoading || !hasNextPage) {
+            return;
+        }
+        if (trigger[0].isIntersecting) {
+            isLoading = true;
+            currentPage++;
+            variables.page = currentPage;
+            console.log(`Loading more anime data (page ${currentPage})...`);
+
+            $.post({
+                url: 'https://graphql.anilist.co',
+                contentType: 'application/json',
+                data: JSON.stringify({query, variables}),
+                success: function (response) {
+                    displayAnimeData(response, true);
+                    isLoading = false;
+                },
+                error: function (err) {
+                    console.error("Error loading more anime data:", err);
+                    isLoading = false;
+                    currentPage--; // Revert page increment on error
+                }
+            });
+        }
     }
 
     function displayAnimeData(animeList, isAppending) {
@@ -215,12 +246,15 @@ export function renderBrowse() {
             setupInfiniteScroll($('.loading-indicator')[0]);
         }
 
-        // If we've loaded all pages, add an end message
+        // If loaded all pages, add an end message
         if (!hasNextPage && isAppending) {
-            $animeGrid.append('<div class="no-results">You\'ve reached the end!</div>');
+            $animeGrid.append(`<div class="no-results">You've reached the end!</div>`);
         }
     }
 
+    function setupInfiniteScroll(triggerElement) {
+        intersectionObserver.observe(triggerElement);
+    }
 
     // Utility function: debounce to prevent excessive function calls
     function debounce(func, wait) {
@@ -231,36 +265,5 @@ export function renderBrowse() {
             clearTimeout(timeout);
             timeout = setTimeout(() => func.apply(context, args), wait);
         };
-    }
-
-    function setupInfiniteScroll(triggerElement) {
-        intersectionObserver.observe(triggerElement);
-    }
-
-    function loadMoreAnimeData(trigger) {
-        if (isLoading || !hasNextPage) {
-            return;
-        }
-        if (trigger[0].isIntersecting) {
-            isLoading = true;
-            currentPage++;
-            variables.page = currentPage;
-            console.log(`Loading more anime data (page ${currentPage})...`);
-
-            $.post({
-                url: 'https://graphql.anilist.co',
-                contentType: 'application/json',
-                data: JSON.stringify({query, variables}),
-                success: function (response) {
-                    displayAnimeData(response, true);
-                    isLoading = false;
-                },
-                error: function (err) {
-                    console.error("Error loading more anime data:", err);
-                    isLoading = false;
-                    currentPage--; // Revert page increment on error
-                }
-            });
-        }
     }
 }

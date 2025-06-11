@@ -56,7 +56,7 @@ export function renderBrowse() {
     let isLoading = false;
     const intersectionObserver = new IntersectionObserver(loadMoreAnimeData);
 
-    // Initialize the page
+    // Initialise the page
     initializePage();
 
     //todo: cache the API responses to avoid excess API calls.
@@ -112,22 +112,33 @@ export function renderBrowse() {
 
     function loadGenreSelectOptions() {
         return new Promise((resolve, reject) => {
-            $.post({
-                url: 'https://graphql.anilist.co',
-                contentType: 'application/json',
-                data: JSON.stringify({query: allGenresQuery}),
-                success: function (response) {
-                    console.log("Loaded genre options.");
-                    response.data.GenreCollection.forEach(genre => {
-                        $("#animeGenreSelect").append(`<option value="${genre}">${genre}</option>`);
-                    });
-                    resolve();
-                },
-                error: function (err) {
-                    console.error("Error loading genre options:", err);
-                    reject(err);
-                }
-            });
+            if (!localStorage.getItem('genres')) {
+                $.post({
+                    url: 'https://graphql.anilist.co',
+                    contentType: 'application/json',
+                    data: JSON.stringify({query: allGenresQuery}),
+                    success: function (response) {
+                        console.log("Loaded genre options.");
+                        const genreOptions = response.data.GenreCollection;
+                        localStorage.setItem('genres', JSON.stringify(genreOptions));
+                        genreOptions.forEach(genre => {
+                            $("#animeGenreSelect").append(`<option value="${genre}">${genre}</option>`);
+                        });
+                        resolve();
+                    },
+                    error: function (err) {
+                        console.error("Error loading genre options:", err);
+                        reject(err);
+                    }
+                });
+            } else {
+                const genreOptions = JSON.parse(localStorage.getItem('genres'));
+                genreOptions.forEach(genre => {
+                    $("#animeGenreSelect").append(`<option value="${genre}">${genre}</option>`);
+                });
+                console.log("Loaded genre options from cache.");
+                resolve();
+            }
         });
     }
 

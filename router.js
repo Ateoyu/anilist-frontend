@@ -20,3 +20,18 @@ export function router() {
         $('#app').html(`<p>404 Page Not Found</p>`);
     }
 }
+
+export function navigateWithViewTransition(url) {
+    // Check if View Transitions API is supported
+    if (!document.startViewTransition) {
+        // Fallback for browsers that don't support View Transitions
+        history.pushState(null, '', url);
+        router();
+        return;
+    }
+
+    document.startViewTransition(() => {
+        history.pushState(null, '', url);
+        router();
+    });
+}

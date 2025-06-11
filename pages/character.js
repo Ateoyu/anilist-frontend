@@ -11,29 +11,36 @@ export function renderCharacter(id) {
         image {
           large
         }
-        description
+        description(asHtml: true)
       }
     }
   `;
 
-    const variables = { id: parseInt(id) };
+    const variables = {id: parseInt(id)};
 
     $.ajax({
         url: 'https://graphql.anilist.co',
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ query, variables }),
-        success: function(response) {
+        data: JSON.stringify({query, variables}),
+        success: function (response) {
             const char = response.data.Character;
 
+            //language=HTML
             $app.html(`
-              <h1 class="text-2xl mb-4">${char.name.full}</h1>
-              <img src="${char.image.large}" class="w-48 mb-4 rounded"  alt="${char.name.full} image"/>
-              <p class="text-gray-300">${char.description ?? 'No description.'}</p>
+                <div class="characterContainer">
+                    <div class="character">
+                        <h1>${char.name.full}</h1>
+                        <img src="${char.image.large}" alt="${char.name.full} image"/>
+                    </div>
+                    <div class="characterDescription">
+                        ${char.description ?? '<p>No description.</p>'}
+                    </div>
+                </div>
             `);
         },
-        error: function() {
-            $app.html(`<p class="text-red-500">Failed to load character.</p>`);
+        error: function () {
+            $app.html(`<p class="error-message">Failed to load character.</p>`);
         }
     });
 }

@@ -1,10 +1,12 @@
 @use 'variables';
 @use 'base';
 
-// Components
+// Reusable Components
 @use 'components/navbar';
-@use 'components/anime-filter';
-@use "components/anime-grid";
-@use "components/loading-icon";
+@use 'components/loading-icon';
 
 // Pages
+@use 'pages/home';
+@use 'pages/browse';
+@use 'pages/anime';
+@use 'pages/character';

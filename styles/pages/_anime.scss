@@ -1,0 +1,273 @@
+@use "../variables" as *;
+@use "sass:color";
+
+// View Transition styles
+::view-transition-old(anime-cover),
+::view-transition-new(anime-cover) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+}
+
+// Ensure cover image container has proper containment
+.coverImageWrapper {
+  contain: layout;
+  
+  .coverImage {
+    object-fit: cover;
+    display: block;
+    width: 100%;
+    height: 100%
+  }
+}
+
+// Banner and Title Section
+
+#banner {
+  height: 20vh;
+  width: 100%;
+  background: no-repeat 50% 35%;
+  background-size: cover;
+
+  @media only screen and (min-width: 800px) {
+    height: 30vh;
+    max-height: 400px;
+  }
+}
+
+#widthLimiter {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+#bannerAndTitleWrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-content: center;
+
+  .coverImageWrapper {
+    max-width: 200px;
+    width: 25vw;
+    min-width: 100px;
+
+    overflow: hidden;
+    margin: -130px auto 0;
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(49, 54, 68, 100);
+
+    @media only screen and (min-width: 800px) {
+      margin: -150px 0 0;
+      max-width: unset;
+      width: 100%;
+    }
+  }
+  .content {
+    color: whitesmoke;
+  }
+
+  @media only screen and (min-width: 800px) {
+    grid-template-columns: 25% 1fr;
+    gap: 25px;
+  }
+}
+
+
+
+
+
+// Anime Description Section
+#animeDescriptionWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  color: whitesmoke;
+  background-color: color.scale($primary-colour, $lightness: 2%);
+
+  border-radius: $primary-border-radius;
+  max-height: 150px;
+  overflow: hidden;
+
+  &.expanded {
+    max-height: unset;
+  }
+
+  #animeDescription {
+    padding: 15px;
+
+    &.overflowed {
+      overflow-y: hidden;
+    }
+  }
+
+  .expandContractButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0 15px;
+    width: 100%;
+    color: color.scale(whitesmoke, $lightness: -25%);
+    box-shadow: 0 0 5px 15px color.scale($primary-colour, $lightness: 2%);
+  }
+
+  @media only screen and (min-width: 800px) {
+    max-height: unset;
+  }
+}
+
+// Media Data Section
+.mediaDataContainer {
+  margin-top: 25px;
+
+  .mediaData {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+
+    color: whitesmoke;
+    padding: 15px;
+
+    border-radius: $primary-border-radius;
+    background-color: color.scale($primary-colour, $lightness: 2%);
+
+    .data {
+      background-color: color.scale($primary-colour, $lightness: -20%);
+      border-radius: $primary-border-radius;
+      padding: 10px;
+    }
+
+    dt {
+      font-weight: bold;
+    }
+
+    dt dd {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  // Characters Grid Section
+  .mediaOverview {
+    margin-top: 15px;
+
+    h2 {
+      color: whitesmoke;
+      margin-bottom: 10px;
+    }
+
+    #charactersGrid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* 3 characters per row on mobile */
+      justify-content: center;
+      gap: 10px; /* Smaller gap on mobile */
+
+      /* Tablet view - 4 characters per row */
+      @media only screen and (min-width: 600px) {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        //padding: 0 clamp(15px, 3vw, 30px) clamp(15px, 3vw, 30px);
+      }
+
+      /* Desktop view - 5 or more characters per row */
+      @media only screen and (min-width: 900px) {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: clamp(15px, 2vw, 25px);
+        //padding: 0 clamp(20px, 4vw, 40px) clamp(20px, 4vw, 40px);
+      }
+
+      /* Character card component styles */
+      .characterDiv {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        border-radius: $primary-border-radius;
+        overflow: hidden;
+        transition: all 0.25s ease;
+        background-color: color.scale($primary-colour, $lightness: 5%);
+        height: 100%;
+
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .characterThumbnailContainer {
+          position: relative;
+          width: 100%;
+          padding-bottom: 130%;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 80%, rgba(0, 0, 0, 0.1));
+            z-index: 1;
+          }
+
+          img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+          }
+        }
+
+        &:hover .characterThumbnailContainer img {
+          transform: scale(1.05);
+        }
+
+        .characterBriefDetails {
+          padding: 10px 8px;
+          margin: 0;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+
+          dt {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            color: whitesmoke;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          dd {
+            margin: 0;
+            font-size: 0.8rem;
+            color: color.scale(whitesmoke, $lightness: -15%);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+
+      /* Hover and focus states */
+      .characterDiv:focus-within {
+        outline: 2px solid color.scale($primary-colour, $lightness: 30%);
+        box-shadow: 0 0 0 2px color.scale($primary-colour, $lightness: 30%, $alpha: -70%);
+      }
+    }
+  }
+}

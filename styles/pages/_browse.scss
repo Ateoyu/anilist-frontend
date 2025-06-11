@@ -1,0 +1,148 @@
+@use "../variables" as *;
+@use "sass:color";
+
+// View Transition styles
+::view-transition-old(anime-cover),
+::view-transition-new(anime-cover) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+}
+
+// Ensure view transition name is properly applied
+.animeCoverImgContainer {
+  contain: layout;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+#widthLimiterBrowse {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0;
+
+  @media (min-width: 600px) {
+    padding: 0 20px;
+  }
+}
+
+// Filter Container
+#animeFilterContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 15px;
+  background-color: $primary-colour;
+  border-radius: $primary-border-radius;
+  margin: 20px clamp(15px, 4vw, 225px);
+
+  label {
+    display: flex;
+    flex-direction: column;
+    color: whitesmoke;
+    font-weight: bold;
+    flex: 1;
+    min-width: 150px;
+  }
+
+  #animeSearchInput, select {
+    margin-top: 5px;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    background-color: color.scale($primary-colour, $lightness: 10%);
+    color: whitesmoke;
+    height: 36px;
+    -webkit-appearance: none; /* Remove default styling on iOS */
+    appearance: none; /* Standardize appearance across browsers */
+
+    &:focus {
+      outline: 2px solid color.scale($primary-colour, $lightness: 30%);
+    }
+  }
+
+  #animeSearchInput {
+    /* iOS-specific: temporarily increase font-size on focus to prevent zoom in */
+    @supports (-webkit-touch-callout: none) {
+      &:focus {
+        font-size: 16px;
+        line-height: 1.2;
+      }
+    }
+  }
+
+  select {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 30px; /* Make room for the custom dropdown arrow */
+  }
+
+  @media (min-width: 600px) {
+    margin: 20px 0;
+  }
+}
+
+// Anime Grid
+#animeGridContainer {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+  grid-template-rows: auto;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 25px); // Responsive gap using clamp
+  padding: 0 clamp(15px, 4vw, 225px); // Responsive padding using clamp
+
+  .animeCard {
+    position: relative;
+    display: grid;
+    box-shadow: 2px 2px 4px color.adjust($primary-colour, $saturation: -30%);
+    border-radius: $primary-border-radius;
+    overflow: hidden;
+    //height: 275px;
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 2px 7px 8px color.adjust($primary-colour, $saturation: -20%)
+    }
+
+    .animeCoverImgContainer {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      grid-area: 1/-1;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .animeTextContainer {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 10px 10px 10px;
+      grid-area: 1/-1;
+      font-size: clamp(12px, 1.5vw, 10px);
+      color: whitesmoke;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), transparent 80%);
+      z-index: 1;
+
+      h2 {
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  @media (min-width: 600px) {
+    padding: 0;
+  }
+}

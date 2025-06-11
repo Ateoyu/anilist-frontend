@@ -52,7 +52,7 @@ export function renderBrowse() {
 
     let variables = {};
     let currentPage = 1;
-    let hasNextPage = true;
+    let animeArrayForCurrentPage = [];
     let isLoading = false;
     const intersectionObserver = new IntersectionObserver(loadMoreAnimeData);
 
@@ -61,31 +61,41 @@ export function renderBrowse() {
 
     //todo: cache the API responses to avoid excess API calls.
 
-    // function loadCachedData() {
-    //     const cachedAnime = localStorage.getItem(ANIME_DATA_KEY);
-    //     const cachedScrollPosition = localStorage.getItem(SCROLL_POSITION_KEY);
-    //     const cachedGenres = localStorage.getItem(GENRES_KEY);
-    //
-    //     if (cachedAnime) {
-    //
-    //     }
-    // }
-
     function initializePage() {
         setupFilterEventListeners();
 
         const genresLoaded = loadGenreSelectOptions();
         const yearsLoaded = loadYearSelectOptions();
 
-        // Wait for all options to load, then apply filters and load data
-        Promise.all([genresLoaded, yearsLoaded])
+        const cachedData = localStorage.getItem(window.location.href);
+        if (cachedData) {
+            let animePages = JSON.parse(cachedData);
+            animeArrayForCurrentPage = animePages;
+            currentPage = animePages.length;
+            console.log(`Loaded ${animePages.length} pages of cached data.`);
+
+            for (const page of animePages) {
+                displayCachedAnimeData(page);
+            }
+
+            Promise.all([genresLoaded, yearsLoaded])
             .then(() => {
                 loadFiltersFromUrl();
-                loadAnimeData();
             })
             .catch(error => {
                 console.error("Error initializing page:", error);
             });
+        } else {
+            // Wait for all options to load, then apply filters and load data
+            Promise.all([genresLoaded, yearsLoaded])
+                .then(() => {
+                    loadFiltersFromUrl();
+                    loadNewAnimeData();
+                })
+                .catch(error => {
+                    console.error("Error initializing page:", error);
+                });
+        }
     }
 
     function setupFilterEventListeners() {
@@ -149,8 +159,25 @@ export function renderBrowse() {
         // Update URL with current filter values
         updateUrlWithFilters(searchValue, genreValue, yearValue, seasonValue);
 
-        currentPage = 1;
-        loadAnimeData();
+        const cachedData = localStorage.getItem(window.location.href);
+        if (cachedData) {
+            let animePages = JSON.parse(cachedData);
+            animeArrayForCurrentPage = animePages;
+            currentPage = animePages.length;
+            console.log(`Loaded ${animePages.length} pages of cached data.`);
+
+            // Show loading indicator
+            const $animeGrid = $('#animeGridContainer');
+            $animeGrid.html('<div class="loading-indicator">Loading anime...</div>');
+
+            for (const page of animePages) {
+                displayCachedAnimeData(page);
+            }
+        } else {
+            animeArrayForCurrentPage = [];
+            currentPage = 1;
+            loadNewAnimeData();
+        }
     }
 
     function updateUrlWithFilters(search, genre, year, season) {
@@ -215,27 +242,10 @@ export function renderBrowse() {
         }
     }
 
-     // Based on the window width and height, set the perPage variable to optimise the network request size and frequency.
-    function setPerPageVarFromWindowSize(innerWidth, innerHeight) {
-        if (innerHeight > 600) {
-            switch (true) {
-                case (innerWidth >= 1536):
-                    return 50;
-                case (innerWidth >= 1280 && innerWidth < 1536):
-                    return 40;
-                case (innerWidth >= 1024 && innerWidth < 1280):
-                    return 30;
-                default:
-                    return 20;
-            }
-        }
-        return 20;
-    }
-
-    function loadAnimeData() {
+    function loadNewAnimeData() {
         isLoading = true;
         variables.page = 1;
-        variables.perPage = setPerPageVarFromWindowSize(window.innerWidth, window.innerHeight);
+        variables.perPage = 50;
         currentPage = 1;
         console.log("Loading anime data...");
 
@@ -248,7 +258,11 @@ export function renderBrowse() {
             contentType: 'application/json',
             data: JSON.stringify({query, variables}),
             success: function (response) {
-                displayAnimeData(response, false);
+                const animeList = response.data.Page.media;
+                const hasNextPage = response.data.Page.pageInfo.hasNextPage;
+                animeArrayForCurrentPage.push(animeList);
+                localStorage.setItem(window.location.href, JSON.stringify(animeArrayForCurrentPage));
+                displayAnimeData(animeList, hasNextPage,false);
                 isLoading = false;
             },
             error: function (err) {
@@ -260,7 +274,7 @@ export function renderBrowse() {
     }
 
     function loadMoreAnimeData(trigger) {
-        if (isLoading || !hasNextPage) {
+        if (isLoading) {
             return;
         }
         if (trigger[0].isIntersecting) {
@@ -274,7 +288,11 @@ export function renderBrowse() {
                 contentType: 'application/json',
                 data: JSON.stringify({query, variables}),
                 success: function (response) {
-                    displayAnimeData(response, true);
+                    const animeList = response.data.Page.media;
+                    const hasNextPage = response.data.Page.pageInfo.hasNextPage;
+                    animeArrayForCurrentPage.push(animeList);
+                    localStorage.setItem(window.location.href, JSON.stringify(animeArrayForCurrentPage));
+                    displayAnimeData(animeList, hasNextPage, true);
                     isLoading = false;
                 },
                 error: function (err) {
@@ -286,9 +304,8 @@ export function renderBrowse() {
         }
     }
 
-    function displayAnimeData(animeList, isAppending) {
+    function displayAnimeData(animeList, hasNextPage, isAppending) {
         const $animeGrid = $('#animeGridContainer');
-        hasNextPage = animeList.data.Page.pageInfo.hasNextPage;
         $('.loading-indicator').remove();
 
         // If this is a fresh load (not appending), clear the grid first
@@ -297,13 +314,13 @@ export function renderBrowse() {
         }
 
         // If no more pages or no results, show a message
-        if (animeList.data.Page.media.length === 0 && !isAppending) {
+        if (animeList.length === 0 && !isAppending) {
             $animeGrid.html('<div class="no-results">No anime found matching your criteria.</div>');
             return;
         }
 
         // Append anime cards to the grid
-        for (const anime of animeList.data.Page.media) {
+        for (const anime of animeList) {
             const id = anime.id;
             const coverImage = anime.coverImage.large;
             const title = anime.title.english ?? anime.title.romaji;
@@ -335,6 +352,38 @@ export function renderBrowse() {
             $animeGrid.append(`<div class="no-results">You've reached the end!</div>`);
         }
     }
+
+
+    function displayCachedAnimeData(animePage) {
+        const $animeGrid = $('#animeGridContainer');
+        $('.loading-indicator').remove();
+
+        // Append anime cards to the grid
+        for (const anime of animePage) {
+            const id = anime.id;
+            const coverImage = anime.coverImage.large;
+            const title = anime.title.english ?? anime.title.romaji;
+
+            // Store the cover image URL in sessionStorage for reuse in anime view
+            sessionStorage.setItem(`anime-cover-${id}`, coverImage);
+
+            const animeCard = `
+                <div class="animeCard" data-link href="/anime/${id}">
+                    <div class="animeCoverImgContainer" style="view-transition-name: anime-cover-${id};">
+                        <img src="${coverImage}" alt="anime cover image">
+                    </div>
+                    <div class="animeTextContainer">
+                        <h2>${title}</h2>
+                    </div>
+                </div>`;
+
+            $animeGrid.append(animeCard);
+        }
+
+        $animeGrid.append('<div class="loading-indicator">Loading more...</div>');
+        setupInfiniteScroll($('.loading-indicator')[0]);
+    }
+
 
     function setupInfiniteScroll(triggerElement) {
         intersectionObserver.observe(triggerElement);

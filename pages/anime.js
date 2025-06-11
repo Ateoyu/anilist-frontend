@@ -12,7 +12,8 @@ export function renderAnimeDetails(id) {
         <div id="widthLimiter">
             <div id="bannerAndTitleWrapper">
                 <div class="coverImageWrapper">
-                    <img class="coverImage" alt="coverImage" style="view-transition-name: anime-cover-${id};" ${cachedCoverImage ? `src="${cachedCoverImage}"` : ''}>
+                    <img class="coverImage" alt="coverImage" style="view-transition-name: anime-cover-${id};"
+                         ${cachedCoverImage ? `src="${cachedCoverImage}"` : ''}>
                 </div>
                 <div class="content">
                     <h1 class="englishTitle"></h1>
@@ -169,7 +170,6 @@ export function renderAnimeDetails(id) {
         }
     }
 
-
     function removeExpandCollapseFunctionality($description, $animeDescriptionWrapper) {
         $description.removeClass('overflowed');
         $animeDescriptionWrapper.removeClass('expanded');
@@ -179,13 +179,14 @@ export function renderAnimeDetails(id) {
     function checkIfDescriptionExceedsDefaultHeight() {
         const $animeDescriptionWrapper = $('#animeDescriptionWrapper');
         const $description = $('#animeDescription');
+        try {
+            const descriptionHeight = $description[0].scrollHeight;
+            const maxDescriptionHeight = 150;
 
-        const descriptionHeight = $description[0].scrollHeight;
-        const maxDescriptionHeight = 150;
-
-        if (descriptionHeight > maxDescriptionHeight) {
-            addExpandCollapseFunctionality($description, $animeDescriptionWrapper);
-        }
+            if (descriptionHeight > maxDescriptionHeight) {
+                addExpandCollapseFunctionality($description, $animeDescriptionWrapper);
+            }
+        } catch (e) {}
     }
 
     // Utility function: debounce to prevent excessive function calls
